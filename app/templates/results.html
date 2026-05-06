@@ -1,0 +1,551 @@
+{% extends "base.html" %}
+{% block title %}Your learning path — {{ target_role }}{% endblock %}
+
+{% block content %}
+<style>
+  /* ── Results page layout ─────────────────────────────────────────── */
+  .results-page {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 3rem 2rem 5rem;
+  }
+
+  .results-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .results-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .results-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    line-height: 1.15;
+    color: var(--ink);
+  }
+
+  .results-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .results-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    border: 1px solid var(--border);
+    padding: 0.45rem 1rem;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+    white-space: nowrap;
+    margin-top: 0.25rem;
+  }
+
+  .results-back:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  /* ── Two-column grid ─────────────────────────────────────────────── */
+  .results-grid {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 1.75rem;
+    align-items: start;
+  }
+
+  /* ── Section card ────────────────────────────────────────────────── */
+  .section-card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+  }
+
+  .section-card:last-child { margin-bottom: 0; }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 1rem 1.4rem;
+    border-bottom: 1px solid var(--border-soft);
+    background: var(--paper);
+  }
+
+  .card-header-icon { font-size: 0.95rem; }
+
+  .card-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .card-body { padding: 1.25rem 1.4rem; }
+
+  /* ── Skill tag pills ─────────────────────────────────────────────── */
+  .skill-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .skill-tag {
+    display: inline-block;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.28rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+
+  .skill-tag.accent {
+    background: var(--accent-light);
+    border-color: transparent;
+    color: var(--accent);
+  }
+
+  /* ── Required skills sub-sections ───────────────────────────────── */
+  .required-section { margin-bottom: 1rem; }
+  .required-section:last-child { margin-bottom: 0; }
+
+  .required-section-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--ink-faint);
+    margin-bottom: 0.5rem;
+  }
+
+  /* ── Gap analysis ────────────────────────────────────────────────── */
+  .gap-group { margin-bottom: 1.1rem; }
+  .gap-group:last-child { margin-bottom: 0; }
+
+  .gap-group-label {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 0.5rem;
+  }
+
+  .gap-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .gap-dot.red    { background: var(--danger); }
+  .gap-dot.yellow { background: var(--accent-2); }
+  .gap-dot.green  { background: var(--accent); }
+
+  .gap-label-red    { color: var(--danger); }
+  .gap-label-yellow { color: var(--accent-2); }
+  .gap-label-green  { color: var(--accent); }
+
+  .gap-items { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+  .gap-tag {
+    font-size: 0.76rem;
+    font-weight: 500;
+    padding: 0.22rem 0.65rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+  }
+
+  .gap-tag.red {
+    background: var(--danger-light);
+    color: var(--danger);
+    border-color: #f5c6c2;
+  }
+
+  .gap-tag.yellow {
+    background: var(--accent-2-light);
+    color: var(--accent-2);
+    border-color: #f0d9a8;
+  }
+
+  .gap-tag.green {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  /* ── Week accordions ─────────────────────────────────────────────── */
+  .week-accordion {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.65rem;
+    overflow: hidden;
+    background: var(--paper-card);
+    transition: box-shadow 0.2s;
+  }
+
+  .week-accordion:last-child { margin-bottom: 0; }
+  .week-accordion:hover      { box-shadow: 0 2px 14px rgba(0,0,0,0.05); }
+  .week-accordion[open]      { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+
+  .week-summary {
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    list-style: none;
+    user-select: none;
+  }
+
+  .week-summary::-webkit-details-marker { display: none; }
+  .week-summary::marker { display: none; }
+
+  .week-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: var(--radius-sm);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+  }
+
+  .week-meta    { flex: 1; min-width: 0; }
+
+  .week-focus {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .week-count {
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    margin-top: 0.1rem;
+  }
+
+  .week-chevron {
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  details[open] .week-chevron { transform: rotate(180deg); }
+
+  /* ── Resources inside accordion ─────────────────────────────────── */
+  .week-resources {
+    border-top: 1px solid var(--border-soft);
+  }
+
+  .resource-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--border-soft);
+    transition: background 0.15s;
+  }
+
+  .resource-item:last-child  { border-bottom: none; }
+  .resource-item:hover       { background: var(--paper); }
+
+  .resource-num {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--ink-faint);
+    width: 1.1rem;
+    flex-shrink: 0;
+    padding-top: 0.2rem;
+    text-align: right;
+  }
+
+  .resource-info { flex: 1; min-width: 0; }
+
+  .resource-title {
+    display: block;
+    font-size: 0.87rem;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1.45;
+    transition: color 0.15s;
+  }
+
+  .resource-title:hover {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+
+  .resource-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.3rem;
+  }
+
+  .platform-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: var(--paper-warm);
+    color: var(--ink-muted);
+    border: 1px solid var(--border);
+    letter-spacing: 0.03em;
+  }
+
+  .resource-note {
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    font-style: italic;
+  }
+
+  /* ── Roadmap wrapper card ────────────────────────────────────────── */
+  .roadmap-card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .roadmap-card-body { padding: 1.1rem 1.1rem 1.25rem; }
+
+  /* ── Disclaimer ──────────────────────────────────────────────────── */
+  .results-disclaimer {
+    text-align: center;
+    margin-top: 2.75rem;
+    font-size: 0.76rem;
+    color: var(--ink-faint);
+    line-height: 1.6;
+  }
+
+  /* ── Responsive ──────────────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .results-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 600px) {
+    .results-page { padding: 2rem 1.25rem 4rem; }
+    .results-header { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+
+<div class="results-page">
+
+  <!-- ── Page header ───────────────────────────────────────────────── -->
+  <div class="results-header">
+    <div>
+      <p class="results-eyebrow">Personalized learning path</p>
+      <h1 class="results-title">Your roadmap to <em>{{ target_role }}</em></h1>
+    </div>
+    <a href="/" class="results-back">← Start over</a>
+  </div>
+
+  <!-- ── Two-column grid ───────────────────────────────────────────── -->
+  <div class="results-grid">
+
+    <!-- LEFT: skills + gap ──────────────────────────────────────────── -->
+    <div>
+
+      <!-- Current skills -->
+      <div class="section-card">
+        <div class="card-header">
+          <span class="card-header-icon">🧩</span>
+          <span class="card-label">Your current skills</span>
+        </div>
+        <div class="card-body">
+          {% if current_skills and current_skills.skills %}
+            <ul class="skill-list">
+              {% for s in current_skills.skills %}
+                <li class="skill-tag">{{ s.name }}</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p style="font-size:0.85rem;color:var(--ink-faint);">No skills extracted from resume.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Required skills -->
+      {% if required_skills %}
+      <div class="section-card">
+        <div class="card-header">
+          <span class="card-header-icon">🎯</span>
+          <span class="card-label">Required for this role</span>
+        </div>
+        <div class="card-body">
+          {% if required_skills.core_skills %}
+          <div class="required-section">
+            <p class="required-section-label">Core skills</p>
+            <ul class="skill-list">
+              {% for s in required_skills.core_skills %}
+                <li class="skill-tag accent">{{ s }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+          {% if required_skills.tools_and_tech %}
+          <div class="required-section">
+            <p class="required-section-label">Tools &amp; tech</p>
+            <ul class="skill-list">
+              {% for s in required_skills.tools_and_tech %}
+                <li class="skill-tag">{{ s }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Gap analysis -->
+      {% if gap_report %}
+      <div class="section-card">
+        <div class="card-header">
+          <span class="card-header-icon">📊</span>
+          <span class="card-label">Skill gap analysis</span>
+        </div>
+        <div class="card-body">
+
+          {% if gap_report.missing_skills %}
+          <div class="gap-group">
+            <div class="gap-group-label">
+              <span class="gap-dot red"></span>
+              <span class="gap-label-red">Must learn</span>
+            </div>
+            <div class="gap-items">
+              {% for s in gap_report.missing_skills %}
+                <span class="gap-tag red">{{ s }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          {% if gap_report.partial_matches %}
+          <div class="gap-group">
+            <div class="gap-group-label">
+              <span class="gap-dot yellow"></span>
+              <span class="gap-label-yellow">Needs strengthening</span>
+            </div>
+            <div class="gap-items">
+              {% for s in gap_report.partial_matches %}
+                <span class="gap-tag yellow">{{ s }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          {% if gap_report.strong_skills %}
+          <div class="gap-group">
+            <div class="gap-group-label">
+              <span class="gap-dot green"></span>
+              <span class="gap-label-green">Already have</span>
+            </div>
+            <div class="gap-items">
+              {% for s in gap_report.strong_skills %}
+                <span class="gap-tag green">{{ s }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+      {% endif %}
+
+    </div><!-- /left -->
+
+    <!-- RIGHT: roadmap ──────────────────────────────────────────────── -->
+    <div>
+      <div class="roadmap-card">
+        <div class="card-header">
+          <span class="card-header-icon">🗓️</span>
+          <span class="card-label">Week-by-week roadmap</span>
+        </div>
+        <div class="roadmap-card-body">
+
+          {% if learning_path and learning_path.weeks %}
+            {% for week in learning_path.weeks %}
+            <details class="week-accordion" {% if loop.first %}open{% endif %}>
+              <summary class="week-summary">
+                <span class="week-badge">W{{ week.week }}</span>
+                <div class="week-meta">
+                  <div class="week-focus">{{ week.focus }}</div>
+                  <div class="week-count">
+                    {{ week.resources | length }} resource{{ 's' if week.resources | length != 1 else '' }}
+                  </div>
+                </div>
+                <span class="week-chevron">▾</span>
+              </summary>
+
+              <div class="week-resources">
+                {% for r in week.resources %}
+                <div class="resource-item">
+                  <span class="resource-num">{{ loop.index }}</span>
+                  <div class="resource-info">
+                    <a href="{{ r.url }}" target="_blank" rel="noopener noreferrer" class="resource-title">
+                      {{ r.title }}
+                    </a>
+                    <div class="resource-meta">
+                      <span class="platform-badge">{{ r.platform }}</span>
+                      {% if r.note %}
+                        <span class="resource-note">{{ r.note }}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </details>
+            {% endfor %}
+
+          {% else %}
+            <p style="font-size:0.85rem;color:var(--ink-faint);padding:0.5rem 0.25rem;">
+              No roadmap was generated. Please try again.
+            </p>
+          {% endif %}
+
+        </div>
+      </div>
+    </div><!-- /right -->
+
+  </div><!-- /results-grid -->
+
+  <p class="results-disclaimer">
+    Course suggestions are AI-generated — verify content before enrolling.<br>
+    YouTube links are fetched live from the API and may change.
+  </p>
+
+</div><!-- /results-page -->
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}UpskillForJob — Get your personalized learning path{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div>
+    <span class="hero-badge">Career Growth</span>
+    <h1 class="hero-title">
+      Bridge the gap between <em>where you are</em> and where you want to be
+    </h1>
+    <p class="hero-subtitle">
+      Upload your resume and target role. Get a personalized learning path with curated courses tailored to your skill gaps.
+    </p>
+  </div>
+
+  <div class="hero-visual">
+    <div class="auth-card" style="max-width: 420px; width: 100%;">
+      {% if error %}
+      <div class="auth-error">{{ error }}</div>
+      {% endif %}
+
+      <form method="post" action="/analyze" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="resume">Upload Your Resume</label>
+          <input
+            type="file"
+            id="resume"
+            name="resume"
+            accept=".pdf"
+            required
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="target_role">Desired Role</label>
+          <input
+            type="text"
+            id="target_role"
+            name="target_role"
+            placeholder="e.g., Product Manager, Data Scientist"
+            required
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="location">Location / Region</label>
+          <input
+            type="text"
+            id="location"
+            name="location"
+            placeholder="e.g., San Francisco, Remote, Europe"
+            class="form-input"
+          />
+        </div>
+
+        <button type="submit" class="btn-submit" id="submit-btn">Analyse</button>
+        <p style="font-size:0.72rem;color:#9ca3af;text-align:center;margin-top:0.75rem;">
+          We analyse your resume but never store it.
+        </p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<div id="loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(255,255,255,0.9);z-index:999;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
+  <div style="width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#111827;border-radius:50%;animation:spin 0.7s linear infinite;"></div>
+  <p style="font-size:0.9rem;color:#374151;font-weight:500;">Analysing your resume&hellip;</p>
+  <p style="font-size:0.78rem;color:#9ca3af;">This takes 15&ndash;20 seconds</p>
+</div>
+<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+<script>
+  document.querySelector('form').addEventListener('submit', function() {
+    document.getElementById('loading-overlay').style.display = 'flex';
+    document.getElementById('submit-btn').disabled = true;
+  });
+</script>
+
+<section class="features">
+  <div class="features-inner">
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3 class="feature-title">Skill Gap Analysis</h3>
+      <p class="feature-body">
+        We analyze your current experience against your target role to identify exactly what you need to learn.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <h3 class="feature-title">Personalized Path</h3>
+      <p class="feature-body">
+        Get a custom learning roadmap ordered by priority, so you know exactly what to tackle first.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">🎓</div>
+      <h3 class="feature-title">Curated Resources</h3>
+      <p class="feature-body">
+        Receive handpicked courses and YouTube recommendations that match your learning style and goals.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="cta-inner">
+    <h2 class="cta-title">Your next career move starts with clarity</h2>
+    <p class="cta-body">
+      Stop guessing what to learn. Start building the skills that matter for your dream role.
+    </p>
+  </div>
+</section>
+{% endblock %}
