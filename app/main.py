@@ -20,15 +20,16 @@ templates = Jinja2Templates(directory="app/templates")
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     return templates.TemplateResponse(
+        request,
         "index.html",
-        {"request": request, "error": "Too many requests — please wait a minute before trying again."},
+        {"error": "Too many requests — please wait a minute before trying again."},
         status_code=429,
     )
 
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")
 
 
 @app.post("/analyze", response_class=HTMLResponse)
@@ -41,29 +42,31 @@ async def analyze(
 ):
     if resume.content_type != "application/pdf":
         return templates.TemplateResponse(
+            request,
             "index.html",
-            {"request": request, "error": "Please upload a PDF file."},
+            {"error": "Please upload a PDF file."},
         )
 
     file_bytes = await resume.read()
     text, err = safe_extract(file_bytes)
     if err:
         return templates.TemplateResponse(
-            "index.html", {"request": request, "error": err}
+            request, "index.html", {"error": err}
         )
 
     try:
         result = graph.invoke({"resume_text": text, "target_role": target_role, "location": location})
     except Exception:
         return templates.TemplateResponse(
+            request,
             "index.html",
-            {"request": request, "error": "Analysis failed — our AI service may be temporarily unavailable. Please try again in a moment."},
+            {"error": "Analysis failed — our AI service may be temporarily unavailable. Please try again in a moment."},
         )
 
     return templates.TemplateResponse(
+        request,
         "results.html",
         {
-            "request": request,
             "target_role": target_role,
             "current_skills": result.get("current_skills"),
             "required_skills": result.get("required_skills"),
