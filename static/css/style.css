@@ -521,7 +521,7 @@ a { color: inherit; text-decoration: none; }
 
     .hero-subtitle { max-width: 100%; }
     .hero-actions { justify-content: center; }
-    .hero-visual { display: none; }
+    .hero-visual { display: flex; justify-content: center; }
 
     .features-inner { grid-template-columns: 1fr; }
 }
